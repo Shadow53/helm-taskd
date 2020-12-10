@@ -21,3 +21,11 @@ version: 0.1.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: 1.16.0
+
+maintainers:
+    - name: Michael Bryant
+      email: shadow53@shadow53.com
+
+sources:
+    - https://git.shadow53.com/helm-charts/taskd
+    - https://taskwarrior.org/download/

@@ -1,0 +1,4 @@
+Setup scripts for each user can be found in the container under
+`/taskd/certs/`. For an example user "Richard Grayson" in organization
+"Batman Inc", the setup script would be at
+`/taskd/certs/batman_inc_richard_grayson/setup-batman_inc_richard_grayson.sh`.

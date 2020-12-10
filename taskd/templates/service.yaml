@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "taskd.fullname" . }}
+  labels:
+    {{- include "taskd.labels" . | nindent 4 }}
+  annotations:
+      {{- toYaml .Values.service.annotations | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- if and .Values.service.loadBalancerIP (eq .Values.service.type "LoadBalancer") }}
+    loadBalancerIP: {{ .Values.service.loadBalancerIP  }}
+  {{- end }}
+  {{ if eq .Values.service.type "ClusterIP" }}
+  clusterIP: None
+  {{- end }}
+  ports:
+    - port: {{ .Values.service.port }}
+      {{- with .Values.service.nodePort }}
+      nodePort: {{ . }}
+      {{- end }}
+      targetPort: {{ .Values.taskd.port }}
+      protocol: TCP
+      name: taskd
+  selector:
+    {{- include "taskd.selectorLabels" . | nindent 4 }}

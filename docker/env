@@ -1,0 +1,12 @@
+#TASKDDATA=/taskd
+TASKD_USERLIST=defaultorg/defaultuser:test org/testuser:test org/user two
+TASKD_HOST=taskd.mnbryant.com
+TASKD_PORT=53589
+CA_BITS=4096 
+CA_EXPIRATION_DAYS=365 
+CA_ORGANIZATION=Shadow53
+#CA_CN=taskd.example.com
+CA_COUNTRY=US
+CA_STATE=Washington
+CA_LOCALITY=Redmond
+

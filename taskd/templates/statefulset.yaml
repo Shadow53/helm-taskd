@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "taskd.fullname" . }}
+  labels:
+    {{- include "taskd.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "taskd.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "taskd.fullname" . }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.taskd.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "taskd.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        fsGroup: 1000
+        #initContainers:
+        #  - name: init
+        #    image: "{{ .Values.image.repository }}:{{ .Values.image.version }}"
+        #    command: ["/usr/sbin/init_taskd.sh"]
+        #    volumeMounts:
+        #      - name: init
+        #        mountPath: /usr/sbin
+        #      - name: config
+        #        mountPath: /etc/taskd/conf
+        #      - name: data
+        #        mountPath: /data
+      terminationGracePeriodSeconds: {{ .Values.statefulset.terminationGracePeriodSeconds }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: TASKD_HOST
+              value: {{ .Values.taskd.host | quote }}
+            - name: TASKD_PORT
+              value: {{ .Values.taskd.port | quote }}
+            - name: CA_BITS
+              value: {{ .Values.taskd.ca.bits | quote }}
+            - name: CA_EXPIRATION_DAYS
+              value: {{ .Values.taskd.ca.expiration | quote }}
+            - name: CA_ORGANIZATION
+              value: {{ .Values.taskd.ca.org | quote }}
+            - name: CA_COUNTRY
+              value: {{ .Values.taskd.ca.country | quote }}
+            - name: CA_STATE
+              value: {{ .Values.taskd.ca.state | quote }}
+            - name: CA_LOCALITY
+              value: {{ .Values.taskd.ca.locality | quote }}
+            {{- with .Values.taskd.groups }}
+            {{- $userStr := "" -}}
+            {{- range . }}
+              {{- $group := .name }}
+              {{- range .users }}
+                {{- $userStr = printf "%s:%s/%s" $userStr $group . }}
+              {{- end }}
+              {{- $userStr = trimPrefix ":" $userStr }}
+            {{- end }}
+            - name: TASKD_USERLIST
+              value: {{ $userStr | quote }}
+            {{- end }}
+          ports:
+            - name: taskd
+              containerPort: {{ .Values.taskd.port }}
+          livenessProbe:
+            tcpSocket:
+              port: taskd
+            initialDelaySeconds: 200
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            tcpSocket:
+              port: taskd
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: taskddata
+              mountPath: /taskd
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+  {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
+        - name: taskddata
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim }}
+  {{- else if not .Values.persistence.enabled }}
+        - name: taskddata
+          emptyDir: {}
+  {{- else if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: taskddata
+      spec:
+        accessModes:
+          {{- range .Values.persistence.accessModes }}
+            - {{ . | quote }}
+          {{- end }}
+        {{- if .Values.persistence.storageClass }}
+        storageClassName: {{ .Values.persistence.storageClass | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+  {{- end }}
