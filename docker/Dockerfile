@@ -35,7 +35,7 @@ RUN apk update && \
     apk upgrade && \
     apk add taskd taskd-pki
 
-COPY --chown=taskd:taskd init.sh /init.sh
+COPY --chown=taskd:taskd ./init.sh /init.sh
 
 RUN chmod o+x /init.sh
 
