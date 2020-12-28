@@ -11,9 +11,11 @@ trigger:
 
 steps:
     - name: build/publish docker image
-      image: docker:latest
-      commands:
-          - docker build /drone/src/docker
+      image: plugins/docker
+      settings:
+          dry_run: true
+          dockerfile: docker/Dockerfile
+          repo: shadow53/taskd
 
 ---
 kind: pipeline
@@ -28,18 +30,14 @@ trigger:
 
 steps:
     - name: build/publish docker image
-      image: docker:latest
-      environment:
-          DOCKER_USERNAME:
-              from_secret: docker_username
-          DOCKER_PASSWORD:
+      image: plugins/docker
+      settings:
+          dockerfile: docker/Dockerfile
+          repo: shadow53/taskd
+          username: shadow53
+          password:
               from_secret: docker_token
-      commands:
-          - docker build /drone/src/docker
-          - export DOCKER_IMAGE="$(docker images --format='{{.ID}}' | head -1)"
-          - docker tag $DOCKER_IMAGE shadow53/taskd:develop
-          - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          - docker push shadow53/taskd:develop
+          tags: develop
 
 ---
 kind: pipeline
@@ -54,17 +52,13 @@ trigger:
 
 steps:
     - name: build/publish docker image
-      image: docker:latest
-      environment:
-          DOCKER_USERNAME:
-              from_secret: docker_username
-          DOCKER_PASSWORD:
+      image: plugins/docker
+      settings:
+          auto_tag: true
+          dockerfile: docker/Dockerfile
+          repo: shadow53/taskd
+          username: shadow53
+          password:
               from_secret: docker_token
-      commands:
-          - docker build /drone/src/docker
-          - export DOCKER_IMAGE="$(docker images --format='{{.ID}}' | head -1)"
-          - docker tag $DOCKER_IMAGE shadow53/taskd:${DRONE_TAG}
-          - docker tag $DOCKER_IMAGE shadow53/taskd:latest
-          - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          - docker push shadow53/taskd:${DRONE_TAG}
-          - docker push shadow53/taskd:latest
+          tags:
+              - latest
