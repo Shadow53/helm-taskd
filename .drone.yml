@@ -14,7 +14,6 @@ steps:
       image: plugins/docker
       settings:
           dry_run: true
-          dockerfile: /drone/src/docker/Dockerfile
           repo: shadow53/taskd
 
 ---
@@ -32,7 +31,6 @@ steps:
     - name: build/publish docker image
       image: plugins/docker
       settings:
-          dockerfile: /drone/src/docker/Dockerfile
           repo: shadow53/taskd
           username: shadow53
           password:
@@ -55,7 +53,6 @@ steps:
       image: plugins/docker
       settings:
           auto_tag: true
-          dockerfile: /drone/src/docker/Dockerfile
           repo: shadow53/taskd
           username: shadow53
           password:
