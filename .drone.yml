@@ -1,0 +1,70 @@
+---
+kind: pipeline
+type: kubernetes
+name: taskd docker (pull)
+
+trigger:
+    event:
+        - pull_request
+    repo:
+        - helm-charts/taskd
+
+steps:
+    - name: build/publish docker image
+      image: docker:latest
+      commands:
+          - docker build /drone/src/docker
+
+---
+kind: pipeline
+type: kubernetes
+name: taskd docker (develop)
+
+trigger:
+    branch:
+        - master
+    repo:
+        - helm-charts/taskd
+
+steps:
+    - name: build/publish docker image
+      image: docker:latest
+      environment:
+          DOCKER_USERNAME:
+              from_secret: docker_username
+          DOCKER_PASSWORD:
+              from_secret: docker_token
+      commands:
+          - docker build /drone/src/docker
+          - export DOCKER_IMAGE="$(docker images --format='{{.ID}}' | head -1)"
+          - docker tag $DOCKER_IMAGE shadow53/taskd:develop
+          - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          - docker push shadow53/taskd:develop
+
+---
+kind: pipeline
+type: kubernetes
+name: taskd docker (tag)
+
+trigger:
+    event:
+        - tag
+    repo:
+        - helm-charts/taskd
+
+steps:
+    - name: build/publish docker image
+      image: docker:latest
+      environment:
+          DOCKER_USERNAME:
+              from_secret: docker_username
+          DOCKER_PASSWORD:
+              from_secret: docker_token
+      commands:
+          - docker build /drone/src/docker
+          - export DOCKER_IMAGE="$(docker images --format='{{.ID}}' | head -1)"
+          - docker tag $DOCKER_IMAGE shadow53/taskd:${DRONE_TAG}
+          - docker tag $DOCKER_IMAGE shadow53/taskd:latest
+          - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          - docker push shadow53/taskd:${DRONE_TAG}
+          - docker push shadow53/taskd:latest
