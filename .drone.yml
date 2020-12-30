@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: kubernetes
-name: taskd docker (pull)
+name: taskd (pull request)
 
 trigger:
     event:
@@ -10,11 +10,15 @@ trigger:
         - helm-charts/taskd
 
 steps:
-    - name: build/publish docker image
+    - name: build docker image
       image: plugins/docker
       settings:
           dry_run: true
           repo: shadow53/taskd
+    - name: lint helm chart
+      image: alpine/helm:3.4.2
+      commands:
+          - helm lint --strict /drone/src/taskd/
 
 ---
 kind: pipeline
