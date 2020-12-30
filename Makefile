@@ -24,20 +24,3 @@ else
 	@echo "Uploading to docker"
 	${CONTAINER_BUILDER} push ${CONTAINER_FULL_NAME}:${CONTAINER_VERSION}
 endif
-
-.PHONY: helm-install
-helm-install: values.yaml taskd/Chart.yaml
-	helm install taskd taskd --values values.yaml
-
-.PHONY: helm-update
-helm-update: values.yaml taskd/Chart.yaml
-	helm upgrade taskd taskd --values values.yaml
-	kubectl delete pod taskd-0
-
-.PHONY: helm-uninstall
-helm-uninstall: taskd/Chart.yaml
-	helm uninstall taskd
-
-.PHONY: dl-client-setup
-dl-client-setup:
-	kubectl cp taskd-0:/taskd/certs "${CERTS_DEST}"
