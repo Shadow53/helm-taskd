@@ -16,7 +16,7 @@ steps:
           dry_run: true
           repo: shadow53/taskd
     - name: lint helm chart
-      image: shadow53/helm-netlify
+      image: shadow53/helm-netlify:latest
       settings:
           helm_rebuild_repo: false
           helm_package: true
@@ -42,7 +42,7 @@ steps:
           password:
               from_secret: docker_token
     - name: lint helm chart
-      image: shadow53/helm-netlify
+      image: shadow53/helm-netlify:latest
       settings:
           helm_git_beta: true
           helm_rebuild_repo: true
@@ -82,7 +82,7 @@ steps:
           tags:
               - latest
     - name: publish helm chart
-      image: shadow53/helm-netlify
+      image: shadow53/helm-netlify:latest
       settings:
           helm_rebuild_repo: true
           helm_package: true
