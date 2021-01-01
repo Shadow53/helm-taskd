@@ -54,6 +54,10 @@ steps:
           netlify_create_site: true
           netlify_site_name: "Shadow53 Helm Beta Charts"
           netlify_disable_telemetry: true
+          repo_root_url: https://charts-beta.shadow53.com
+          repo_path: /drone/src/taskd
+          append_helm_repo: true
+          keep_versions: 3
 
 ---
 kind: pipeline
@@ -89,3 +93,7 @@ steps:
           netlify_create_site: true
           netlify_site_name: "Shadow53 Helm Charts"
           netlify_disable_telemetry: true
+          repo_root_url: https://charts.shadow53.com
+          repo_path: /drone/src/taskd
+          append_helm_repo: true
+          keep_versions: 5
