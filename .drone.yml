@@ -16,9 +16,11 @@ steps:
           dry_run: true
           repo: shadow53/taskd
     - name: lint helm chart
-      image: alpine/helm:3.4.2
-      commands:
-          - helm lint --strict /drone/src/taskd/
+      image: shadow53/helm-netlify
+      settings:
+          helm_rebuild_repo: false
+          helm_package: true
+          helm_lint: true
 
 ---
 kind: pipeline
@@ -39,7 +41,19 @@ steps:
           username: shadow53
           password:
               from_secret: docker_token
-          tags: develop
+    - name: lint helm chart
+      image: shadow53/helm-netlify
+      settings:
+          helm_git_beta: true
+          helm_rebuild_repo: true
+          helm_package: true
+          helm_lint: true
+          netlify_auth_token:
+              from_secret: netlify_auth_token
+          netlify_account_slug: Shadow53
+          netlify_create_site: true
+          netlify_site_name: "Shadow53 Helm Beta Charts"
+          netlify_disable_telemetry: true
 
 ---
 kind: pipeline
@@ -63,3 +77,15 @@ steps:
               from_secret: docker_token
           tags:
               - latest
+    - name: publish helm chart
+      image: shadow53/helm-netlify
+      settings:
+          helm_rebuild_repo: true
+          helm_package: true
+          helm_lint: true
+          netlify_auth_token:
+              from_secret: netlify_auth_token
+          netlify_account_slug: Shadow53
+          netlify_create_site: true
+          netlify_site_name: "Shadow53 Helm Charts"
+          netlify_disable_telemetry: true
